@@ -105,7 +105,7 @@ class ServiceManager
   end
 
   # Reads app config (host, app name and command) from a text file as per specs
-  # ONE line per host
+  # ONE line per app
   # returns a hash
   def read_app_config(path_to_file)
     app_config = {}
