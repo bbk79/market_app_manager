@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require "thor"
+require "service_manager"
+
+class ServiceManagerCLI < Thor
+  desc "apps [DATE] [--config-dir=<path>]", "Lists apps that should be running on the given ISO 8601 date. Defaults to today if no date is given."
+  option :config_dir, desc: "path to config files, defaults to ./config/", banner: '/path/to/config/files/'
+  def apps (date = Date.today.to_s)
+    begin
+      sm = ServiceManager.new options[:config_dir]
+      sm.print_apps_for_day(Date.iso8601(date))
+    rescue Exception => e
+      abort("Execution aborted: #{e.message}")
+    end
+  end
+
+  desc "commands [DATE] [--config-dir=<path>] [--apps=a1,a2,...]", "Lists daily app start and stop commands for 7 days from a given ISO 8601 date (inclusive). Defaults to today if no date is given."
+  option :config_dir, desc: "path to config files, defaults to ./config/", banner: '/path/to/config/files/'
+  option :apps, desc: "only show commands for these apps, comma separated list", banner: "a1,a2,..."
+  def commands (date = Date.today.to_s)
+    begin
+      sm = ServiceManager.new options[:config_dir]
+      apps = options[:apps].nil? ? nil : options[:apps].split(',')
+      sm.print_commands_for_week(Date.iso8601(date), apps)
+    rescue Exception => e
+      abort("Execution aborted: #{e.message}")
+    end
+  end
+end
+
+ServiceManagerCLI.start(ARGV)
